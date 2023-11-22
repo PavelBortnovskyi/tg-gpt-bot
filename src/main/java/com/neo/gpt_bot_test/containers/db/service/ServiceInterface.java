@@ -1,5 +1,7 @@
 package com.neo.gpt_bot_test.containers.db.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,6 +16,8 @@ public interface ServiceInterface<E> {
   void deleteById(Long id);
 
   List<E> findAll();
+
+  Page<E> findAllPageable(Pageable pageable);
 
   Optional<E> findById(Long id);
 

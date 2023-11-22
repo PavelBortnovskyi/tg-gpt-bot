@@ -18,4 +18,9 @@ public class BotUserService extends GeneralService<BotUser> {
   public Optional<BotUser> getUser(Long id) {
     return botUserRepository.findById(id);
   }
+
+
+//  public Page<BotUser> getAllBotUsers(Integer pageSize, Integer pageNumber) {return botUserRepository.getPageableBotUsers(Pageable.ofSize(pageSize).withPage(pageNumber));}
+
+
 }

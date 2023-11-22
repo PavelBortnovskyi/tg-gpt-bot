@@ -30,7 +30,10 @@ public class BotUser extends BaseEntity {
     @Column(name = "last_name")
     private String lastName;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @Column(name = "locale")
+    private String language;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<ChatMessage> messages = new HashSet<>();
 }
 
