@@ -1,6 +1,6 @@
 package com.neo.gpt_bot_test.security;
 
-import com.neo.gpt_bot_test.containers.db.service.AdminUserService;
+import com.neo.gpt_bot_test.service.AdminUserService;
 import com.neo.gpt_bot_test.exceptions.authError.EmailNotFoundException;
 import com.neo.gpt_bot_test.model.AdminUser;
 import lombok.RequiredArgsConstructor;

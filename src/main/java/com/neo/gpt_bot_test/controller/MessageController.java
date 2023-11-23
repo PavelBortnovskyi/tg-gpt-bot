@@ -2,9 +2,9 @@ package com.neo.gpt_bot_test.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.neo.gpt_bot_test.annotations.Marker;
-import com.neo.gpt_bot_test.containers.db.dto.request.ChatMessageRequestDTO;
-import com.neo.gpt_bot_test.containers.db.dto.response.ChatMessageResponseDTO;
-import com.neo.gpt_bot_test.containers.db.facade.ChatFacade;
+import com.neo.gpt_bot_test.dto.request.ChatMessageRequestDTO;
+import com.neo.gpt_bot_test.dto.response.ChatMessageResponseDTO;
+import com.neo.gpt_bot_test.facade.ChatFacade;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

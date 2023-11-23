@@ -1,8 +1,7 @@
 package com.neo.gpt_bot_test.security;
 
 ;
-import com.neo.gpt_bot_test.containers.db.service.JwtTokenService;
-import com.neo.gpt_bot_test.containers.db.utils.SpringSecurityAuditorAware;
+import com.neo.gpt_bot_test.service.JwtTokenService;
 import com.neo.gpt_bot_test.enums.TokenType;
 import com.neo.gpt_bot_test.exceptions.authError.JwtAuthenticationException;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +39,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (!token.isEmpty()) {
             //Try to validate token as access token
-            if (tokenService.validateToken(token, TokenType.ACCESS)) {
+            if (tokenService.validateToken(token, TokenType.ACCESS) || tokenService.validateToken(token, TokenType.REGISTER)) {
 
                 log.info("Token is valid continue...");
                 this.processRequestWithToken(request, token);

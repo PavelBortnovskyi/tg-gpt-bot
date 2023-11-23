@@ -1,7 +1,7 @@
 package com.neo.gpt_bot_test.commands;
 
-import com.neo.gpt_bot_test.containers.db.config.BotStateKeeper;
-import com.neo.gpt_bot_test.containers.db.service.LocalizationManager;
+import com.neo.gpt_bot_test.config.BotStateKeeper;
+import com.neo.gpt_bot_test.service.LocalizationManager;
 import com.neo.gpt_bot_test.enums.BotState;
 import com.neo.gpt_bot_test.model.BotUser;
 import com.neo.gpt_bot_test.repository.BotUserRepository;

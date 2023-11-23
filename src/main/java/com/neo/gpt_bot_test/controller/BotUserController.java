@@ -1,7 +1,7 @@
 package com.neo.gpt_bot_test.controller;
 
-import com.neo.gpt_bot_test.containers.db.dto.response.BotUserResponseDTO;
-import com.neo.gpt_bot_test.containers.db.facade.BotUserFacade;
+import com.neo.gpt_bot_test.dto.response.BotUserResponseDTO;
+import com.neo.gpt_bot_test.facade.BotUserFacade;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

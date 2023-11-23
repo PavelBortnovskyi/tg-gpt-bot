@@ -1,6 +1,6 @@
 package com.neo.gpt_bot_test.model;
 
-import com.neo.gpt_bot_test.containers.db.utils.Auditable;
+import com.neo.gpt_bot_test.utils.Auditable;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
