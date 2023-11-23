@@ -31,7 +31,6 @@ public class ApplicationBeans {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         return factory.getValidator();
     }
-
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)

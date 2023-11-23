@@ -1,0 +1,45 @@
+spring:
+  datasource:
+    password: ${db_password}
+    url: jdbc:postgresql://db:5432/gpt-bot-db
+    username: ${db_username}
+    driver-classname: org.postgresql.Driver
+    initialize: true
+  output:
+    ansi:
+      enabled: always
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    generate-ddl: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    defer-datasource-initialization: false
+  sql:
+    init:
+      mode: always
+      #schema-locations: classpath:/schema.sql
+      continue-on-error: true
+  config:
+    activate:
+      on-profile: deploy
+  jackson:
+    mapper:
+      DEFAULT_VIEW_INCLUSION: true
+jwt:
+  secret: ${jwt_secret}
+  secretRefresh: ${jwt_refresh_secret}
+  secretPasswordReset: ${jwt_password_reset_secret}
+  secretPasswordUpdate: ${jwt_password_update_secret}
+  secretRegister: ${jwt_register_secret}
+  expiration: 7200000 #2h
+  expirationRefresh: 604800000 #7d
+  expirationPasswordReset: 86400000 #24h
+  expirationPasswordUpdate: 3600000 #1h
+  expirationRegister: 86400000 #24h
+  header: Authorization
+bot_name: gpt_test_bot
+bot_token: ${bot_token}
+openai_model: gpt-3.5-turbo
+openai_api_url: https://api.openai.com/v1/chat/completions
+open_ai_api_key: ${open_ai_api_key}

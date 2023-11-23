@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+  gpt-bot:
+    container_name: gpt-bot-app
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: src/main/java/com/neo/gpt_bot_test/containers/deploy/Dockerfile
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./src/main/resources/application.yml:/app/application.yml
+    networks:
+      - spring-cloud-network
+    depends_on:
+       db:
+         condition: service_healthy
+####################################################################################
+  db:
+    container_name: postgres-db
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: 'gpt-bot-db'
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: '111555111'
+    ports:
+      - '5432:5432'
+    volumes:
+      - '../../../ro:/ro:ro'
+      - '../../../rw:/rw'
+      - '../../../Downloads:/dl:ro'
+      - '../.data/pg15:/var/lib/postgresql/data'
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d gpt-bot-db -U postgres" ]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+    networks:
+      - spring-cloud-network
+networks:
+  spring-cloud-network:
+    driver: bridge
