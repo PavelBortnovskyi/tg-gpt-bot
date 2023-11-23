@@ -1,5 +1,6 @@
 package com.neo.gpt_bot_test.model;
 
+import com.neo.gpt_bot_test.enums.Language;
 import lombok.NoArgsConstructor;
 
 import lombok.Getter;
@@ -31,7 +32,13 @@ public class BotUser extends BaseEntity {
     private String lastName;
 
     @Column(name = "locale")
-    private String language;
+    private String language = Language.EN.toString(); //Default value
+
+    @Column(name = "ai_temp_level")
+    private Double temperature = 0.7; //Default level
+
+    @Column(name = "isNewbie")
+    private boolean isNewbie = true;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<ChatMessage> messages = new HashSet<>();

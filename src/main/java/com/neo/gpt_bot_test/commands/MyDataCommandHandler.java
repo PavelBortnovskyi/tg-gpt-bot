@@ -33,7 +33,7 @@ public class MyDataCommandHandler extends BotCommand {
 
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
-        Optional<BotUser> maybeCurrUser = botUserRepository.findByChatId(chat.getId());
+        Optional<BotUser> maybeCurrUser = botUserRepository.getUserWithMessagesByChatId(chat.getId());
         SendMessage messageToSend = SendMessage.builder().chatId(chat.getId()).text("").build();
         if (maybeCurrUser.isPresent()) {
             BotUser currUser = maybeCurrUser.get();
@@ -41,7 +41,8 @@ public class MyDataCommandHandler extends BotCommand {
             String answer = MessageFormat.format(LocalizationManager.getString("my_data_message"),
                     currUser.getNickName(), currUser.getFirstName(), currUser.getLastName(),
                     currUser.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                    currUser.getLanguage());
+                    currUser.getLanguage(),
+                    currUser.getMessages().size());
             messageToSend.setText(answer);
         } else {
             messageToSend.setText("We no have any data about you, press /start to register");

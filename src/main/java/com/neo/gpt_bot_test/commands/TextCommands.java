@@ -15,4 +15,8 @@ public interface TextCommands {
     String HELP = "help";
 
     String HELP_DESCRIPTION = "get full commands list";
+
+    String SET_TEMPERATURE = "set_temperature";
+
+    String SET_TEMPERATURE_DESCRIPTION = "set AI model creativity level";
 }

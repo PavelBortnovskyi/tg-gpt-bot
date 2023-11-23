@@ -1,7 +1,11 @@
 package com.neo.gpt_bot_test.containers.db.service;
+
 import com.neo.gpt_bot_test.commands.Actions;
 import com.neo.gpt_bot_test.containers.db.config.BotConfig;
 import com.neo.gpt_bot_test.containers.db.config.BotStateKeeper;
+import com.neo.gpt_bot_test.containers.db.utils.ChatMessageFactory;
+import com.neo.gpt_bot_test.enums.BotState;
+import com.neo.gpt_bot_test.enums.ChatMessageType;
 import com.neo.gpt_bot_test.enums.Language;
 import com.neo.gpt_bot_test.model.BotUser;
 import com.neo.gpt_bot_test.model.ChatMessage;
@@ -13,6 +17,7 @@ import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingC
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.IBotCommand;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
+import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.*;
@@ -21,8 +26,8 @@ import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScope
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.File;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -34,19 +39,24 @@ public class Bot extends TelegramLongPollingCommandBot {
     private final BotConfig botConfig;
     private final BotUserRepository botUserRepository;
     private final BotStateKeeper botStateKeeper;
+    private final OpenAiClient openAiClient;
+    private final ChatMessageFactory chatMessageFactory;
 
-
-    public Bot(BotConfig botConfig, BotUserRepository botUserRepository, BotStateKeeper botStateKeeper) {
+    public Bot(BotConfig botConfig, BotUserRepository botUserRepository, BotStateKeeper botStateKeeper,
+               OpenAiClient openAiClient, ChatMessageFactory chatMessageFactory) {
         super(botConfig.getBotToken());
         this.botConfig = botConfig;
         this.botCommands = new ArrayList<>();
         this.botUserRepository = botUserRepository;
         this.botStateKeeper = botStateKeeper;
+        this.openAiClient = openAiClient;
+        this.chatMessageFactory = chatMessageFactory;
         Locale.setDefault(new Locale("en"));
         botCommands.add(new BotCommand("/start", "get started"));
         botCommands.add(new BotCommand("/my_data", "get info about user"));
         botCommands.add(new BotCommand("/delete_my_data", "remove all info about user"));
         botCommands.add(new BotCommand("/help", "get full commands list"));
+        botCommands.add(new BotCommand("/set_temperature", "set AI model creativity level"));
         try {
             this.execute(new SetMyCommands(this.botCommands, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e) {
@@ -68,19 +78,47 @@ public class Bot extends TelegramLongPollingCommandBot {
             if (Objects.nonNull(command)) {
                 command.processMessage(this, message, new String[]{});
             } else {
-               Optional<BotUser> maybeCurrUser = botUserRepository.getUserWithMessagesByChatId(update.getMessage().getChatId());
-               if (maybeCurrUser.isPresent()) {
-                   BotUser currUser = maybeCurrUser.get();
-                   ChatMessage freshMessage = new ChatMessage();
-                   freshMessage.setUser(currUser);
-                   freshMessage.setBody(update.getMessage().getText());
-                   freshMessage.setCreatedAt(LocalDateTime.now());
-                   freshMessage.setCreatedBy(currUser.getNickName());
-                   freshMessage.setAuthorIsAdmin(false);
-                   freshMessage.setAuthorIsAi(false);
-                   currUser.getMessages().add(freshMessage);
-                   botUserRepository.save(currUser);
-               }
+                Optional<BotUser> maybeCurrUser = botUserRepository.getUserWithMessagesByChatId(update.getMessage().getChatId());
+                if (maybeCurrUser.isPresent()) {
+                    BotUser currUser = maybeCurrUser.get();
+
+                    switch (botStateKeeper.getStateForUser(currUser.getId())) {
+                        case INPUT_FOR_GPT -> {
+                            if (text.equalsIgnoreCase("Glory to Robots!") | text.equalsIgnoreCase("Слава роботам!")) {
+                                sendAnimatedAnswer(currUser.getChatId(), new InputFile(new File("src/main/resources/im-so-great-bender.mp4")), null);
+                            } else {
+                                ChatMessage userMessage = chatMessageFactory.createMessage(text, currUser, ChatMessageType.USER);
+                                ChatMessage aiResponse = openAiClient.getAiAnswer(text, currUser);
+
+                                currUser.getMessages().add(userMessage);
+                                currUser.getMessages().add(aiResponse);
+
+                                sendTextAnswer(currUser.getChatId(), aiResponse.getBody(), null);
+                                botUserRepository.save(currUser);
+                            }
+                        }
+                        case INPUT_FOR_TEMPERATURE -> {
+                            try {
+                                Double temperature = Double.parseDouble(update.getMessage().getText());
+                                if (temperature >= 0 && temperature <= 2)
+                                    currUser.setTemperature(temperature);
+                                else throw new NumberFormatException();
+
+                                if (currUser.isNewbie()) {
+                                    sendTextAnswer(currUser.getChatId(), LocalizationManager.getString("start_message"), null);
+                                    currUser.setNewbie(false);
+                                } else
+                                    sendTextAnswer(currUser.getChatId(), MessageFormat.format(LocalizationManager.getString("temperature_set_confirm"), currUser.getTemperature()), null);
+
+                                botUserRepository.save(currUser);
+
+                                botStateKeeper.setStateForUser(currUser.getId(), BotState.INPUT_FOR_GPT);
+                            } catch (NumberFormatException e) {
+                                sendTextAnswer(currUser.getChatId(), LocalizationManager.getString("temp_wrong_input"), null);
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -100,22 +138,17 @@ public class Bot extends TelegramLongPollingCommandBot {
             }
 
             botUserRepository.save(currUser);
+            LocalizationManager.setLocale(new Locale(currUser.getLanguage().toLowerCase()));
 
             try {
                 sendApiMethod(AnswerCallbackQuery.builder()
                         .callbackQueryId(callbackQuery.getId())
                         .text(answer)
                         .build());
-            } catch (TelegramApiException e) {
-                throw new RuntimeException(e);
-            }
 
-            LocalizationManager.setLocale(new Locale(currUser.getLanguage().toLowerCase()));
-
-            try {
                 sendApiMethod(SendMessage.builder()
                         .chatId(callbackQuery.getMessage().getChatId())
-                        .text(MessageFormat.format(LocalizationManager.getString("start_message"), currUser.getFirstName()))
+                        .text(LocalizationManager.getString("temperature_option_message"))
                         .build());
             } catch (TelegramApiException e) {
                 throw new RuntimeException(e);
@@ -143,21 +176,21 @@ public class Bot extends TelegramLongPollingCommandBot {
         try {
             execute(message);
         } catch (TelegramApiException e) {
-            log.error("Got some TelegramAPI exception: " + e.getMessage());
+            log.error("Got some TelegramAPI exception in text answer block: " + e.getMessage());
         }
     }
 
-    private void sendPhotoAnswer(long chatId, InputFile photo, ReplyKeyboardMarkup keyboardMarkup) {
-        SendPhoto sendPhoto = SendPhoto.builder()
+    private void sendAnimatedAnswer(long chatId, InputFile animation, ReplyKeyboardMarkup keyboardMarkup) {
+        SendAnimation sendAnimation = SendAnimation.builder()
+                .animation(animation)
                 .chatId(chatId)
-                .photo(photo)
                 .build();
         if (keyboardMarkup != null)
-            sendPhoto.setReplyMarkup(keyboardMarkup);
+            sendAnimation.setReplyMarkup(keyboardMarkup);
         try {
-            execute(sendPhoto);
+            execute(sendAnimation);
         } catch (TelegramApiException e) {
-            log.error("Got some TelegramAPI exception: " + e.getMessage());
+            log.error("Got some TelegramAPI exception in send animation block: " + e.getMessage());
         }
     }
 }

@@ -42,7 +42,6 @@ public class StartCommandHandler extends BotCommand {
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
         String greeting = MessageFormat.format(LocalizationManager.getString("choose_language_message"), chat.getFirstName());
-        botStateKeeper.changeState(BotState.INPUT_FOR_GPT);
 
         InlineKeyboardMarkup langOptions = InlineKeyboardMarkup.builder()
                 .keyboardRow(List.of(
@@ -74,7 +73,7 @@ public class StartCommandHandler extends BotCommand {
     }
 
     private void registerUser(User user, long chatId) {
-        if (this.botUserRepository.findById(chatId).isEmpty()) {
+        if (this.botUserRepository.findByChatId(chatId).isEmpty()) {
             BotUser freshUser = new BotUser();
             freshUser.setChatId(chatId);
             freshUser.setNickName(user.getUserName());
@@ -82,7 +81,7 @@ public class StartCommandHandler extends BotCommand {
             freshUser.setLastName(user.getLastName());
             freshUser.setCreatedAt(LocalDateTime.now());
             freshUser.setCreatedBy(user.getUserName());
-            this.botUserRepository.save(freshUser);
+            botStateKeeper.setStateForUser(this.botUserRepository.save(freshUser).getId(), BotState.INPUT_FOR_TEMPERATURE);
             log.info(String.format("New User with chatId: %d registered", freshUser.getChatId()));
         }
     }

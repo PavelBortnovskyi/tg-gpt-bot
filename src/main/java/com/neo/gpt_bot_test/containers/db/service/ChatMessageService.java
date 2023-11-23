@@ -1,6 +1,7 @@
 package com.neo.gpt_bot_test.containers.db.service;
 
-import com.neo.gpt_bot_test.containers.db.dto.request.ChatMessageRequestDTO;
+import com.neo.gpt_bot_test.containers.db.utils.ChatMessageFactory;
+import com.neo.gpt_bot_test.enums.ChatMessageType;
 import com.neo.gpt_bot_test.model.BotUser;
 import com.neo.gpt_bot_test.model.ChatMessage;
 import com.neo.gpt_bot_test.repository.BotUserRepository;
@@ -25,6 +26,8 @@ public class ChatMessageService extends GeneralService<ChatMessage> {
 
     private final BotUserRepository botUserRepository;
 
+    private final ChatMessageFactory chatMessageFactory;
+
     private final Bot bot;
 
     public Page<ChatMessage> getBotUserMessages(Long userId, Pageable pageable) {
@@ -35,12 +38,9 @@ public class ChatMessageService extends GeneralService<ChatMessage> {
         List<BotUser> botUsers = botUserRepository.findAll();
         if (!botUsers.isEmpty()) {
             botUsers.forEach(u -> {
-                ChatMessage freshMessage = new ChatMessage();
-                freshMessage.setBody(chatMessage.getBody());
-                freshMessage.setUser(u);
-                freshMessage.setAuthorIsAdmin(true);
-                u.getMessages().add(freshMessage);
-                bot.sendTextAnswer(u.getChatId(), chatMessage.getBody(), null);
+                ChatMessage messageToUser = chatMessageFactory.createMessage(chatMessage.getBody(), u, ChatMessageType.ADMIN);
+                u.getMessages().add(messageToUser);
+                bot.sendTextAnswer(u.getChatId(), messageToUser.getBody(), null);
             });
             botUserRepository.saveAll(botUsers);
 
@@ -50,8 +50,10 @@ public class ChatMessageService extends GeneralService<ChatMessage> {
 
     public ResponseEntity<String> sendMessageToUser(Long userId, ChatMessage chatMessage) {
         if (botUserRepository.existsById(userId)) {
-            chatMessageRepository.save(chatMessage);
-            bot.sendTextAnswer(botUserRepository.findById(userId).get().getChatId(), chatMessage.getBody(), null);
+            BotUser currUser = botUserRepository.getUserWithMessagesById(userId).get();
+            ChatMessage messageToUser = chatMessageFactory.createMessage(chatMessage.getBody(), currUser, ChatMessageType.ADMIN);
+            currUser.getMessages().add(messageToUser);
+            bot.sendTextAnswer(currUser.getChatId(), messageToUser.getBody(), null);
             return ResponseEntity.ok(String.format("Message sent to user with id %d", userId));
         } else
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("User with id %d not exist", userId));

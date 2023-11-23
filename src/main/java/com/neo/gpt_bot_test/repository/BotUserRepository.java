@@ -13,4 +13,7 @@ public interface BotUserRepository extends RepositoryInterface<BotUser> {
 
     @Query("SELECT u FROM BotUser u LEFT JOIN FETCH u.messages WHERE u.chatId = :chatId") //FETCH for request optimization!
     Optional<BotUser> getUserWithMessagesByChatId(@Param("chatId") Long chatId);
+
+    @Query("SELECT u FROM BotUser u LEFT JOIN FETCH u.messages WHERE u.id = :userId") //FETCH for request optimization!
+    Optional<BotUser> getUserWithMessagesById(@Param("userId") Long userId);
 }

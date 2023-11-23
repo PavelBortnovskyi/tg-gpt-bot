@@ -2,6 +2,7 @@ package com.neo.gpt_bot_test.security;
 
 ;
 import com.neo.gpt_bot_test.containers.db.service.JwtTokenService;
+import com.neo.gpt_bot_test.containers.db.utils.SpringSecurityAuditorAware;
 import com.neo.gpt_bot_test.enums.TokenType;
 import com.neo.gpt_bot_test.exceptions.authError.JwtAuthenticationException;
 import lombok.RequiredArgsConstructor;
@@ -44,8 +45,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 log.info("Token is valid continue...");
                 this.processRequestWithToken(request, token);
 
-                //Add value of userId to request to more simple access to it in controllers
-                request.setAttribute("userId", tokenService.getIdFromRequest(request).get());
                 doFilter(request, response, filterChain);
             } else {
                 log.info("Token invalid!");
