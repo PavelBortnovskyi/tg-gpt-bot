@@ -81,6 +81,7 @@ public class StartCommandHandler extends BotCommand {
             freshUser.setLastName(user.getLastName());
             freshUser.setCreatedAt(LocalDateTime.now());
             freshUser.setCreatedBy(user.getUserName());
+            this.botUserRepository.save(freshUser);
             log.info(String.format("New User with chatId: %d registered", freshUser.getChatId()));
         }
         botStateKeeper.setStateForUser(this.botUserRepository.findByChatId(chatId).get().getId(), BotState.INPUT_FOR_TEMPERATURE);
