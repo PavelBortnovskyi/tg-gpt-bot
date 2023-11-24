@@ -11,5 +11,4 @@ public class GptBotTestApplication {
     public static void main(String[] args) {
         SpringApplication.run(GptBotTestApplication.class, args);
     }
-
 }

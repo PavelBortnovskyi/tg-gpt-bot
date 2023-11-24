@@ -24,7 +24,7 @@ public class ChatFacade extends GeneralFacade<ChatMessage, ChatMessageRequestDTO
     }
 
     public Page<ChatMessageResponseDTO> getAllMessages(Integer pageSize, Integer pageNumber) {
-        return chatMessageService.findAllPageable(Pageable.ofSize(pageSize).withPage(pageNumber)).map(this::convertToDto);
+        return chatMessageService.getAllMessages(Pageable.ofSize(pageSize).withPage(pageNumber)).map(this::convertToDto);
     }
 
     public Page<ChatMessageResponseDTO> getUserMessages(Long userId, Integer pageSize, Integer pageNumber) {
