@@ -52,7 +52,7 @@ public class AuthController {
     /**
      * This endpoint waiting for valid token in request to perform refresh token invalidation
      */
-    @ApiOperation("Logout user")
+    @ApiOperation("Logout admin")
     @GetMapping(path = "/logout", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> handleLogout() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

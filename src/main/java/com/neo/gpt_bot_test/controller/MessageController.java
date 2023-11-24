@@ -41,7 +41,7 @@ public class MessageController {
     /**
      * This endpoint for get pageable list of user messages
      */
-    @ApiOperation("Get all messages list (pageable)")
+    @ApiOperation("Get all messages of user with id (pageable)")
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<ChatMessageResponseDTO> handleGetUserMessages(@PathVariable("id") Long id,
                                                               @RequestParam("page") @NotNull Integer page,

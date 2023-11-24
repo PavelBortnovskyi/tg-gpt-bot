@@ -53,6 +53,7 @@ public class ChatMessageService extends GeneralService<ChatMessage> {
             BotUser currUser = botUserRepository.getUserWithMessagesById(userId).get();
             ChatMessage messageToUser = chatMessageFactory.createMessage(chatMessage.getBody(), currUser, ChatMessageType.ADMIN);
             currUser.getMessages().add(messageToUser);
+            botUserRepository.save(currUser);
             bot.sendTextAnswer(currUser.getChatId(), messageToUser.getBody(), null);
             return ResponseEntity.ok(String.format("Message sent to user with id %d", userId));
         } else
