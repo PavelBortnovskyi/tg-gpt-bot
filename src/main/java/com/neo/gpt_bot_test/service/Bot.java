@@ -41,6 +41,10 @@ public class Bot extends TelegramLongPollingCommandBot {
     private final OpenAiClient openAiClient;
     private final ChatMessageFactory chatMessageFactory;
 
+    private String userPromptCache = "";
+
+    private String aiAnswerCache = "";
+
     public Bot(BotConfig botConfig, BotUserRepository botUserRepository, BotStateKeeper botStateKeeper,
                OpenAiClient openAiClient, ChatMessageFactory chatMessageFactory) {
         super(botConfig.getBotToken());
@@ -87,13 +91,19 @@ public class Bot extends TelegramLongPollingCommandBot {
                                 sendAnimatedAnswer(currUser.getChatId(), new InputFile(new File("src/main/resources/im-so-great-bender.mp4")), null);
                             } else {
                                 ChatMessage userMessage = chatMessageFactory.createMessage(text, currUser, ChatMessageType.USER);
-                                ChatMessage aiResponse = openAiClient.getAiAnswer(text, currUser);
+                                ChatMessage aiResponse;
+                                if (userPromptCache.isEmpty() && aiAnswerCache.isEmpty())
+                                    aiResponse = openAiClient.getAiAnswer(text, null, null, currUser);
+                                else
+                                    aiResponse = openAiClient.getAiAnswer(text, aiAnswerCache, userPromptCache, currUser);
 
                                 currUser.getMessages().add(userMessage);
                                 currUser.getMessages().add(aiResponse);
 
                                 sendTextAnswer(currUser.getChatId(), aiResponse.getBody(), null);
                                 botUserRepository.save(currUser);
+                                userPromptCache = text;
+                                aiAnswerCache = aiResponse.getBody();
                             }
                         }
                         case INPUT_FOR_TEMPERATURE -> {
