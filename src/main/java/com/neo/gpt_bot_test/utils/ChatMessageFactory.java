@@ -21,6 +21,7 @@ public class ChatMessageFactory {
         switch (chatMessageType) {
             case AI -> {
                 chatMessage.setCreatedBy(model);
+                chatMessage.setCreatedAt(LocalDateTime.now());
                 chatMessage.setAuthorIsAi(true);
                 chatMessage.setAuthorIsAdmin(false);
             }

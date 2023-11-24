@@ -34,6 +34,10 @@ public class ChatMessageService extends GeneralService<ChatMessage> {
         return chatMessageRepository.getBotUserMessages(userId, pageable);
     }
 
+    public Page<ChatMessage> getAllMessages(Pageable pageable){
+        return chatMessageRepository.getAllMessages(pageable);
+    }
+
     public ResponseEntity<String> sendMessageToAll(ChatMessage chatMessage) {
         List<BotUser> botUsers = botUserRepository.findAll();
         if (!botUsers.isEmpty()) {

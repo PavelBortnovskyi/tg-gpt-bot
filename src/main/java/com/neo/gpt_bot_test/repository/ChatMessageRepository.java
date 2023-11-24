@@ -11,6 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 public interface ChatMessageRepository extends RepositoryInterface<ChatMessage> {
 
     @Transactional
-    @Query("select m from ChatMessage m where m.user.id = :userId")
+    @Query("select m from ChatMessage m where m.user.id = :userId order by m.createdAt asc")
     Page<ChatMessage> getBotUserMessages(@Param("userId") Long userId, Pageable pageable);
+
+    @Transactional
+    @Query("select m from ChatMessage m order by m.createdAt asc")
+    Page<ChatMessage> getAllMessages(Pageable pageable);
 }
