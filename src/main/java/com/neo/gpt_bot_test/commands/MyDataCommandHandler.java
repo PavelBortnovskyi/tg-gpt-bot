@@ -45,7 +45,7 @@ public class MyDataCommandHandler extends BotCommand {
                     currUser.getMessages().size());
             messageToSend.setText(answer);
         } else {
-            messageToSend.setText("We no have any data about you, press /start to register");
+            messageToSend.setText(LocalizationManager.getString("not_registered_message"));
         }
         try {
             absSender.execute(messageToSend);

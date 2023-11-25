@@ -14,22 +14,23 @@ public class GPTChatRequestDTO {
     private int n;
     private double temperature;
 
-    public GPTChatRequestDTO(String model, String prompt, Double temperature) {
+    public GPTChatRequestDTO(String model, String profile, String prompt, Double temperature) {
         this.model = model;
         this.n = 1;
         this.temperature = temperature;
         this.messages = new ArrayList<>();
+        this.messages.add(new GPTMessage("system", profile));
         this.messages.add(new GPTMessage("user", prompt));
     }
 
-    public GPTChatRequestDTO(String model, String prompt, String previousUserPrompt, String previousAiAnswer, Double temperature) {
+    public GPTChatRequestDTO(String model, String profile, String prompt, String previousUserPrompt, String previousAiAnswer, Double temperature) {
         this.model = model;
         this.n = 1;
         this.temperature = temperature;
         this.messages = new ArrayList<>();
+        this.messages.add(new GPTMessage("system", profile));
         this.messages.add(new GPTMessage("user", previousUserPrompt));
         this.messages.add(new GPTMessage("assistant", previousAiAnswer));
         this.messages.add(new GPTMessage("user", prompt));
     }
-
 }

@@ -37,6 +37,9 @@ public class BotUser extends BaseEntity {
     @Column(name = "ai_temp_level")
     private Double temperature = 0.7; //Default level
 
+    @Column(name = "ai_profile")
+    private String aiProfile = "You are a helpful assistant."; //Default
+
     @Column(name = "isNewbie")
     private boolean isNewbie = true;
 
