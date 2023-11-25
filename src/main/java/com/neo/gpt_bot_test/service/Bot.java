@@ -19,6 +19,7 @@ import org.telegram.telegrambots.extensions.bots.commandbot.commands.IBotCommand
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
+import org.telegram.telegrambots.meta.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.*;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
@@ -89,6 +90,7 @@ public class Bot extends TelegramLongPollingCommandBot {
 
                     switch (botStateKeeper.getStateForUser(currUser.getId())) {
                         case INPUT_FOR_CHAT -> {
+                            sendTypingAction(update.getMessage().getChatId());
                             if (text.equalsIgnoreCase("Glory to Robots!") || text.equalsIgnoreCase("Слава роботам!")) {
                                 sendAnimatedAnswer(currUser.getChatId(), new InputFile(new File("src/main/resources/im-so-great-bender.mp4")), null);
                             } else {
@@ -184,6 +186,18 @@ public class Bot extends TelegramLongPollingCommandBot {
         String[] arg = new String[1];
         arg[0] = argument;
         command.processMessage(this, message, arg);
+    }
+
+    public void sendTypingAction(long chatId) {
+        SendChatAction chatAction = SendChatAction.builder()
+                .chatId(chatId)
+                .action("typing")
+                .build();
+        try {
+            execute(chatAction);
+        } catch (TelegramApiException e) {
+            log.error("Got some TelegramAPI exception in typing action block: " + e.getMessage());
+        }
     }
 
     public void sendTextAnswer(long chatId, String answer, ReplyKeyboardMarkup keyboardMarkup) {
