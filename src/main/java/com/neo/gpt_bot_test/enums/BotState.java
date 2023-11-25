@@ -8,5 +8,7 @@ public enum BotState {
 
     INPUT_FOR_TEMPERATURE,
 
-    INPUT_FOR_GPT
+    INPUT_FOR_CONTEXT,
+
+    INPUT_FOR_CHAT
 }

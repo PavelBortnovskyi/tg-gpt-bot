@@ -33,8 +33,8 @@ public class OpenAiClient {
     public ChatMessage getAiAnswer(String prompt, String previousAiAnswer, String previousUserPrompt, BotUser botUser) {
         GPTChatRequestDTO request;
         if (previousAiAnswer !=null && previousUserPrompt !=null) {
-            request = new GPTChatRequestDTO(model, prompt, previousUserPrompt, previousAiAnswer, botUser.getTemperature());
-        } else request = new GPTChatRequestDTO(model, prompt, botUser.getTemperature());
+            request = new GPTChatRequestDTO(model, botUser.getAiProfile(), prompt, previousUserPrompt, previousAiAnswer, botUser.getTemperature());
+        } else request = new GPTChatRequestDTO(model, botUser.getAiProfile(), prompt, botUser.getTemperature());
         GPTChatResponseDTO response = getOpenAiRestTemplate().postForObject(apiUrl, request, GPTChatResponseDTO.class);
 
         ChatMessage chatMessage;

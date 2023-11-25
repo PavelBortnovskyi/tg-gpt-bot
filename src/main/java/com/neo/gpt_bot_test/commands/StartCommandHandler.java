@@ -67,7 +67,6 @@ public class StartCommandHandler extends BotCommand {
         try {
             absSender.execute(messageToSend);
         } catch (TelegramApiException e) {
-            System.out.println("Got some exception in start block: " + e.getMessage());
             log.error("Got some exception in start block: " + e.getMessage());
         }
     }

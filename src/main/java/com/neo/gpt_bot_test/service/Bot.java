@@ -1,6 +1,7 @@
 package com.neo.gpt_bot_test.service;
 
 import com.neo.gpt_bot_test.commands.Actions;
+import com.neo.gpt_bot_test.commands.TextCommands;
 import com.neo.gpt_bot_test.config.BotConfig;
 import com.neo.gpt_bot_test.config.BotStateKeeper;
 import com.neo.gpt_bot_test.utils.ChatMessageFactory;
@@ -55,11 +56,12 @@ public class Bot extends TelegramLongPollingCommandBot {
         this.openAiClient = openAiClient;
         this.chatMessageFactory = chatMessageFactory;
         Locale.setDefault(new Locale("en"));
-        botCommands.add(new BotCommand("/start", "get started"));
-        botCommands.add(new BotCommand("/my_data", "get info about user"));
-        botCommands.add(new BotCommand("/delete_my_data", "remove all info about user"));
-        botCommands.add(new BotCommand("/help", "get full commands list"));
-        botCommands.add(new BotCommand("/set_temperature", "set AI model creativity level"));
+        botCommands.add(new BotCommand(TextCommands.START, TextCommands.START_DESCRIPTION));
+        botCommands.add(new BotCommand(TextCommands.MY_DATA, TextCommands.MD_DESCRIPTION));
+        botCommands.add(new BotCommand(TextCommands.DELETE_MY_DATA, TextCommands.DMD_DESCRIPTION));
+        botCommands.add(new BotCommand(TextCommands.HELP, TextCommands.HELP_DESCRIPTION));
+        botCommands.add(new BotCommand(TextCommands.SET_TEMPERATURE, TextCommands.SET_TEMPERATURE_DESCRIPTION));
+        botCommands.add(new BotCommand(TextCommands.SET_AI_CONTEXT, TextCommands.SET_AI_CONTEXT_DESCRIPTION));
         try {
             this.execute(new SetMyCommands(this.botCommands, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e) {
@@ -86,7 +88,7 @@ public class Bot extends TelegramLongPollingCommandBot {
                     BotUser currUser = maybeCurrUser.get();
 
                     switch (botStateKeeper.getStateForUser(currUser.getId())) {
-                        case INPUT_FOR_GPT -> {
+                        case INPUT_FOR_CHAT -> {
                             if (text.equalsIgnoreCase("Glory to Robots!") || text.equalsIgnoreCase("Слава роботам!")) {
                                 sendAnimatedAnswer(currUser.getChatId(), new InputFile(new File("src/main/resources/im-so-great-bender.mp4")), null);
                             } else {
@@ -121,10 +123,19 @@ public class Bot extends TelegramLongPollingCommandBot {
 
                                 botUserRepository.save(currUser);
 
-                                botStateKeeper.setStateForUser(currUser.getId(), BotState.INPUT_FOR_GPT);
+                                botStateKeeper.setStateForUser(currUser.getId(), BotState.INPUT_FOR_CHAT);
                             } catch (NumberFormatException e) {
                                 sendTextAnswer(currUser.getChatId(), LocalizationManager.getString("temp_wrong_input"), null);
                             }
+                        }
+                        case INPUT_FOR_CONTEXT -> {
+                            if (!text.isEmpty()) {
+                                currUser.setAiProfile(text);
+                                botUserRepository.save(currUser);
+                                botStateKeeper.setStateForUser(currUser.getId(), BotState.INPUT_FOR_CHAT);
+                                sendTextAnswer(currUser.getChatId(), MessageFormat.format(LocalizationManager.getString("set_context_confirm"), text), null);
+                            } else
+                                sendTextAnswer(currUser.getChatId(), LocalizationManager.getString("set_context_error"), null);
                         }
                     }
                 }

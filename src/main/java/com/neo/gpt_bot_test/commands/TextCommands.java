@@ -19,4 +19,8 @@ public interface TextCommands {
     String SET_TEMPERATURE = "set_temperature";
 
     String SET_TEMPERATURE_DESCRIPTION = "set AI model creativity level";
+
+    String SET_AI_CONTEXT = "set_ai_context";
+
+    String SET_AI_CONTEXT_DESCRIPTION = "set AI model profile (role)";
 }
