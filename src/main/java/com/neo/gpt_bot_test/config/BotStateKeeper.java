@@ -3,7 +3,6 @@ package com.neo.gpt_bot_test.config;
 import com.neo.gpt_bot_test.enums.BotState;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

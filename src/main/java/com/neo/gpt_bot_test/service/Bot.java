@@ -42,10 +42,7 @@ public class Bot extends TelegramLongPollingCommandBot {
     private final BotStateKeeper botStateKeeper;
     private final OpenAiClient openAiClient;
     private final ChatMessageFactory chatMessageFactory;
-
-    private String userPromptCache = "";
-
-    private String aiAnswerCache = "";
+    private final Map<Long, String[]> contextKeeper = new HashMap<>();
 
     public Bot(BotConfig botConfig, BotUserRepository botUserRepository, BotStateKeeper botStateKeeper,
                OpenAiClient openAiClient, ChatMessageFactory chatMessageFactory) {
@@ -87,6 +84,7 @@ public class Bot extends TelegramLongPollingCommandBot {
                 Optional<BotUser> maybeCurrUser = botUserRepository.getUserWithMessagesByChatId(update.getMessage().getChatId());
                 if (maybeCurrUser.isPresent()) {
                     BotUser currUser = maybeCurrUser.get();
+                    Long chatId = currUser.getChatId();
 
                     switch (botStateKeeper.getStateForUser(currUser.getId())) {
                         case INPUT_FOR_CHAT -> {
@@ -96,18 +94,17 @@ public class Bot extends TelegramLongPollingCommandBot {
                             } else {
                                 ChatMessage userMessage = chatMessageFactory.createMessage(text, currUser, ChatMessageType.USER);
                                 ChatMessage aiResponse;
-                                if (userPromptCache.isEmpty() && aiAnswerCache.isEmpty())
+                                if ( contextKeeper.get(chatId) == null || contextKeeper.get(chatId).length == 0)
                                     aiResponse = openAiClient.getAiAnswer(text, null, null, currUser);
                                 else
-                                    aiResponse = openAiClient.getAiAnswer(text, aiAnswerCache, userPromptCache, currUser);
+                                    aiResponse = openAiClient.getAiAnswer(text, contextKeeper.get(chatId)[1], contextKeeper.get(chatId)[0], currUser);
 
                                 currUser.getMessages().add(userMessage);
                                 currUser.getMessages().add(aiResponse);
 
                                 sendTextAnswer(currUser.getChatId(), aiResponse.getBody(), null);
                                 botUserRepository.save(currUser);
-                                userPromptCache = text;
-                                aiAnswerCache = aiResponse.getBody();
+                                contextKeeper.put(chatId, new String[]{aiResponse.getBody(), text});
                             }
                         }
                         case INPUT_FOR_TEMPERATURE -> {
